@@ -1,0 +1,1572 @@
+<!--
+  FILE: index.html  —  Proyojon Frontend Structure (Single Page App)
+  CONTENTS
+  ────────────────────────────────────────────────────────────────────
+   1.  HEAD ─ Meta, Fonts, TailwindCSS CDN, style.css ........  line  32
+   2.  NAVIGATION BAR  (#main-nav) ............................  line  48
+   3.  AUTH PAGE  (#page-auth) ................................  line  98
+   4.  APP WRAPPER  (#app-wrapper) ............................  line 210
+       4a. LANDING PAGE        (#page-landing) ................  line 216
+       4b. MARKETPLACE PAGE    (#page-home) ...................  line 272
+       4c. OUR STORY PAGE      (#page-story) ..................  line 316
+       4d. WORKERS PAGE        (#page-workers) ................  line 354
+       4e. MY ORDERS PAGE      (#page-bookings) ...............  line 374
+       4f. PROFILE PAGE        (#page-profile) ................  line 391
+       4g. MODERATOR DASHBOARD (#page-mod) ....................  line 455
+       4h. PROVIDER DASHBOARD  (#page-provider) ...............  line 563
+       4i. MESSAGES PAGE       (#page-messages) ...............  line 687
+       4j. COMBO DEALS PAGE    (#page-combos) .................  line 764
+       4k. COMPLAINTS PAGE     (#page-complaints) .............  line 778
+   5.  FOOTER .................................................  line 893
+   6.  CART DRAWER  (#cart-panel) .............................  line 923
+   7.  BOOKING CONFIRMED OVERLAY ..............................  line 941
+   8.  ADD WORKER MODAL  (#worker-modal) ......................  line 969
+   9.  REVIEW MODAL  (#review-modal) ..........................  line 1008
+  10.  TOAST NOTIFICATION  (#toast) ...........................  line 1075
+  11.  AI CHAT ASSISTANT  (#ai-chat-box) ......................  line 1088
+  12.  SCRIPT  (app.js) .......................................  line 1126
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyojon — Dhaka Home Services</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Cormorant+Garamond:ital,wght@0,600;1,400;1,600&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Leaflet.js for Interactive Live Dhaka Map & Auto Geolocation -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Chart.js for Moderator Dashboard Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ════════════════════════════════════════════
+     NAVIGATION (hidden on auth page)
+     ════════════════════════════════════════════ -->
+  <nav id="main-nav" style="display:none;">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="font-syne font-black text-2xl text-white tracking-tighter cursor-pointer"
+        onclick="App.goPage('landing')">
+        প্রয়ো<span class="text-orange-500">জ</span>ন
+      </div>
+
+      <div class="hidden md:flex gap-8">
+        <button onclick="App.goPage('landing')" id="bnav-landing" class="bnav-item">Home</button>
+        <button onclick="App.goPage('home')" id="bnav-home" class="bnav-item">Marketplace</button>
+        <button onclick="App.goPage('combos')" id="bnav-combos" class="bnav-item hidden">Combo Deals</button>
+        <button onclick="App.goPage('story')" id="bnav-story" class="bnav-item">Our Story</button>
+        <button onclick="App.goPage('workers')" id="bnav-workers" class="bnav-item">Workers</button>
+        <button onclick="App.goPage('bookings')" id="bnav-bookings" class="bnav-item">My Orders</button>
+        <button onclick="App.goPage('complaints')" id="bnav-complaints" class="bnav-item hidden"
+          title="Complaints">Complaints</button>
+        <button onclick="App.goPage('profile')" id="bnav-profile" class="bnav-item">Profile</button>
+        <button id="bnav-provider" onclick="App.goPage('provider')" class="bnav-item hidden">My Jobs</button>
+        <button id="bnav-mod" onclick="App.goPage('mod')" class="bnav-item hidden">Dashboard</button>
+      </div>
+
+      <div class="flex items-center gap-3 md:gap-4">
+        <!-- Notifications Bell Button -->
+        <button id="bnav-notif" onclick="Notifications.toggle()"
+          class="bnav-item flex items-center gap-1.5 relative p-1 text-gray-300 hover:text-white transition" title="Notifications">
+          <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span id="notif-badge" class="hidden absolute -top-1 -right-1.5 bg-orange-600 text-white
+               text-[9px] font-black rounded-full min-w-[17px] h-[17px] flex items-center
+               justify-center px-1 leading-none shadow-sm animate-pulse">0</span>
+        </button>
+
+        <!-- Messages Button — left of cart, shown for customer & provider only -->
+        <button id="bnav-messages" onclick="App.goPage('messages')"
+          class="bnav-item hidden flex items-center gap-1.5 relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          Messages
+          <span id="msg-badge" class="hidden absolute -top-1.5 -right-2 bg-red-500 text-white
+               text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center
+               justify-center px-1 leading-none">0</span>
+        </button>
+        <button onclick="Cart.toggle()"
+          class="relative bg-orange-600 hover:bg-orange-700 text-white px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition">
+          🛒 Cart
+          <span id="cart-badge">0</span>
+        </button>
+        <button id="logout-btn" onclick="Auth.logout()" style="display:none;"
+          class="flex items-center gap-1 text-gray-400 hover:text-orange-500 transition text-xs font-bold uppercase tracking-wide">
+          <span>⏻</span> Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ════════════════════════════════════════════
+     AUTH PAGE (full screen, no container)
+     ════════════════════════════════════════════ -->
+  <div id="page-auth" class="page min-h-screen flex items-center justify-center px-4 py-12" style="background:#f7f7f5;">
+    <div class="auth-card w-full max-w-md p-10 reveal">
+      <div class="text-center mb-8">
+        <div class="font-syne font-black text-5xl mb-2">প্রয়ো<span class="text-orange-500">জ</span>ন</div>
+        <h2 id="auth-title" class="font-syne text-3xl font-extrabold uppercase mt-4">Welcome Back</h2>
+        <p class="text-gray-400 text-sm mt-2" id="auth-subtitle">Login to access Dhaka's finest services.</p>
+      </div>
+
+      <!-- Role Toggle -->
+      <div class="flex p-1 bg-gray-100 rounded-full mb-8">
+        <button onclick="Auth.setRole('customer')" id="role-customer" class="role-btn active">Customer</button>
+        <button onclick="Auth.setRole('provider')" id="role-provider" class="role-btn">Provider</button>
+        <button onclick="Auth.setRole('moderator')" id="role-moderator" class="role-btn">Moderator</button>
+      </div>
+
+      <!-- Form -->
+      <form id="auth-form" onsubmit="Auth.handleSubmit(event)" class="space-y-4">
+        <div id="field-name" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Full Name</label>
+          <input type="text" id="auth-name" placeholder="Hasim Zaman" class="auth-input">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Email</label>
+          <input type="email" id="auth-email" required placeholder="name@proyojon.com" class="auth-input">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Password</label>
+          <input type="password" id="auth-password" required placeholder="••••••••" class="auth-input">
+        </div>
+
+        <!-- Moderator Extra Fields (SignUp Only) -->
+        <div id="field-mod-zone" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Assigned Area /
+            Zone</label>
+          <select id="auth-mod-zone" class="auth-input bg-white">
+            <option value="Gulshan">Gulshan</option>
+            <option value="Banani">Banani</option>
+            <option value="Dhanmondi">Dhanmondi</option>
+            <option value="Bashundhara">Bashundhara</option>
+            <option value="Mirpur">Mirpur</option>
+            <option value="Uttara">Uttara</option>
+          </select>
+        </div>
+
+        <!-- Service Provider Extra Fields (SignUp Only) -->
+        <div id="field-provider-skill" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Primary Trade /
+            Skill</label>
+          <select id="auth-provider-skill" class="auth-input bg-white">
+            <option value="AC Technician">AC Technician</option>
+            <option value="Plumber">Plumber</option>
+            <option value="Electrician">Electrician</option>
+            <option value="Cleaning Expert">Cleaning Expert</option>
+            <option value="Painter">Painter</option>
+            <option value="Moving Specialist">Moving Specialist</option>
+            <option value="Pest Control">Pest Control</option>
+            <option value="Carpenter">Carpenter</option>
+            <option value="IT Technician">IT Technician</option>
+          </select>
+        </div>
+        <div id="field-provider-phone" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Phone Number</label>
+          <input type="tel" id="auth-provider-phone" placeholder="+880 1XXXXXXXXX" class="auth-input">
+        </div>
+        <div id="field-provider-zones" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Coverage Areas (tick
+            all you cover)</label>
+          <div class="grid grid-cols-2 gap-2 mt-1">
+            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="prov-zone-cb"
+                value="Gulshan" checked> Gulshan</label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="prov-zone-cb"
+                value="Banani"> Banani</label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="prov-zone-cb"
+                value="Dhanmondi"> Dhanmondi</label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="prov-zone-cb"
+                value="Bashundhara"> Bashundhara</label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="prov-zone-cb"
+                value="Mirpur"> Mirpur</label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" class="prov-zone-cb"
+                value="Uttara"> Uttara</label>
+          </div>
+        </div>
+        <div id="field-provider-doc" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Verification Document
+            (NID / Trade License)</label>
+          <input type="text" id="auth-provider-doc" placeholder="NID Number or Document name" class="auth-input">
+        </div>
+
+        <div id="field-confirm" class="hidden">
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Confirm
+            Password</label>
+          <input type="password" id="auth-confirm" placeholder="••••••••" class="auth-input">
+        </div>
+        <p id="auth-error" class="text-red-500 text-xs font-bold hidden"></p>
+        <button type="submit" id="auth-btn"
+          class="w-full bg-[#0d0e11] text-white py-4 rounded-2xl font-bold uppercase hover:bg-orange-600 transition-all shadow-lg tracking-widest text-sm">
+          Enter Proyojon
+        </button>
+      </form>
+
+      <div class="text-center mt-6">
+        <button onclick="Auth.toggleMode()" id="toggle-mode-btn"
+          class="text-xs font-bold uppercase text-orange-600 hover:underline tracking-widest">
+          Create an account
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+     MAIN APP WRAPPER (shown after login)
+     ════════════════════════════════════════════ -->
+  <div id="app-wrapper" style="display:none;">
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+      <!-- ════════════════════════════════════════════
+     LANDING PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-landing" class="page">
+        <!-- Hero -->
+        <div class="text-center py-24 reveal">
+          <h1 class="font-syne font-black leading-none mb-6 uppercase" style="font-size: clamp(3rem, 10vw, 8rem);">
+            প্রয়োজন <br><span class="text-orange-600 font-corm italic" style="font-size: clamp(2.5rem, 9vw, 7rem);">যখন
+              তখন</span>
+          </h1>
+          <p class="text-xl text-gray-500 mb-10 max-w-2xl mx-auto font-light">
+            From heritage plumbing to modern AC mastery. Dhaka's finest artisans, one tap away.
+          </p>
+          <div class="flex gap-4 justify-center flex-wrap">
+            <button onclick="App.goPage('home')"
+              class="bg-[#0d0e11] text-white px-10 py-4 rounded-full font-bold hover:bg-orange-600 transition-all shadow-xl text-sm uppercase tracking-widest">
+              Explore Services
+            </button>
+            <button onclick="App.goPage('story')"
+              class="border-2 border-[#0d0e11] px-10 py-4 rounded-full font-bold hover:bg-[#0d0e11] hover:text-white transition-all text-sm uppercase tracking-widest">
+              Our Story
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="bg-white py-20 border-y border-black/5 rounded-3xl my-12">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
+            <div class="reveal">
+              <h3 class="font-syne text-6xl font-bold text-orange-600">25+</h3>
+              <p class="font-corm italic text-2xl text-gray-400 mt-2">Years of Excellence</p>
+            </div>
+            <div class="reveal reveal-delay-1">
+              <h3 class="font-syne text-6xl font-bold text-[#0d0e11]">50k+</h3>
+              <p class="font-corm italic text-2xl text-gray-400 mt-2">Homes Restored</p>
+            </div>
+            <div class="reveal reveal-delay-2">
+              <h3 class="font-syne text-6xl font-bold text-[#0d0e11]">100%</h3>
+              <p class="font-corm italic text-2xl text-gray-400 mt-2">Verified Artisans</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Services -->
+        <div class="py-12">
+          <div class="flex justify-between items-end mb-8">
+            <h2 class="font-syne font-extrabold text-4xl uppercase">Popular <span
+                class="text-orange-600">Services</span></h2>
+            <button onclick="App.goPage('home')"
+              class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-orange-600 transition border-b border-gray-200 hover:border-orange-600 pb-1">View
+              All →</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="featured-services"></div>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     MARKETPLACE PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-home" class="page">
+        <!-- Hero Banner -->
+        <div class="hero-bg text-white p-10 md:p-14 mb-12 shadow-2xl">
+          <div class="relative z-10 max-w-2xl">
+            <p class="text-orange-500 text-xs font-bold tracking-widest uppercase mb-3">Professional Dhaka Home Services
+            </p>
+            <h1 class="font-syne font-black leading-tight mb-6 uppercase" style="font-size: clamp(2rem, 5vw, 3.5rem);">
+              Your Home, <span class="text-orange-600 font-corm italic">Fixed.</span><br>Right Now.
+            </h1>
+            <div class="search-box max-w-lg">
+              <span class="px-3 text-xl">🔍</span>
+              <input type="text" id="search-input" placeholder="Search for AC, cleaning, plumbing..."
+                oninput="Services.search(this.value)">
+              <button class="bg-orange-600 text-white px-6 py-3 text-sm font-bold">Search</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zone Filter -->
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button class="zone-pill active" onclick="Services.setZone(this,'All')">📍 All Dhaka</button>
+          <button class="zone-pill" onclick="Services.setZone(this,'Gulshan')">Gulshan</button>
+          <button class="zone-pill" onclick="Services.setZone(this,'Banani')">Banani</button>
+          <button class="zone-pill" onclick="Services.setZone(this,'Dhanmondi')">Dhanmondi</button>
+          <button class="zone-pill" onclick="Services.setZone(this,'Bashundhara')">Bashundhara</button>
+          <button class="zone-pill" onclick="Services.setZone(this,'Mirpur')">Mirpur</button>
+          <button class="zone-pill" onclick="Services.setZone(this,'Uttara')">Uttara</button>
+        </div>
+
+        <!-- Live Dhaka Service Map Banner -->
+        <div class="mb-10 bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-600 text-xs font-bold">📍</span>
+                <h3 class="font-syne font-bold text-lg uppercase tracking-tight">Live Dhaka Service Hub & Coverage</h3>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Explore real-time verified artisans and service coverage across
+                Dhaka zones</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <button type="button" onclick="LiveMap.autoLocateMarketplace()"
+                class="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow-sm">
+                <span class="live-dot-pulse"></span> 🎯 Auto-Detect My Location
+              </button>
+              <button type="button" onclick="LiveMap.toggleMarketplaceMap()" id="btn-toggle-market-map"
+                class="bg-[#0d0e11] hover:bg-orange-600 text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition shadow-sm">
+                🗺️ View Live Map
+              </button>
+            </div>
+          </div>
+
+          <!-- Collapsible / Embedded Map container -->
+          <div id="marketplace-map-wrapper" class="hidden transition-all duration-300 mt-4">
+            <div id="marketplace-map"
+              class="h-80 w-full rounded-2xl border border-gray-200 shadow-inner overflow-hidden z-10"></div>
+            <div class="flex justify-between items-center text-[11px] text-gray-400 mt-2 px-1">
+              <span>💡 Click any zone or worker pin on the map to filter services</span>
+              <span id="market-map-status">Dhaka Active Zones: 6 Hubs • Verified Artisans</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
+          <aside class="lg:col-span-1">
+            <h2 class="font-syne font-bold text-lg mb-5 uppercase tracking-tight">Categories</h2>
+            <div id="cat-grid" class="flex flex-col gap-2"></div>
+          </aside>
+          <section class="lg:col-span-3">
+            <div id="svc-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            <p id="no-results" class="hidden text-center text-gray-400 py-20 font-syne uppercase tracking-widest">No
+              services found</p>
+          </section>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     OUR STORY PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-story" class="page">
+        <div class="text-center mb-20 reveal">
+          <h2 class="font-syne font-black uppercase" style="font-size: clamp(3rem, 8vw, 6rem);">
+            Our <span class="text-orange-600">Legacy</span>
+          </h2>
+          <p class="font-corm italic text-2xl text-gray-500 mt-4">Four years of redefining the dignity of labor in
+            Dhaka.</p>
+        </div>
+
+        <!-- Timeline -->
+        <div class="relative max-w-4xl mx-auto mb-24">
+          <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 hidden md:block"></div>
+          <div id="timeline-items"></div>
+        </div>
+
+        <!-- Reviews -->
+        <div class="py-16 border-t border-black/5">
+          <h2 class="font-syne font-extrabold text-4xl uppercase mb-12 text-center">
+            Voices of the <span class="font-corm italic text-orange-600">Collective</span>
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div>
+              <h5 class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 border-b pb-4 mb-6">Service
+                Recipients</h5>
+              <div id="customer-reviews"></div>
+            </div>
+            <div>
+              <h5 class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 border-b pb-4 mb-6">Service
+                Artisans</h5>
+              <div id="provider-reviews"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     WORKERS PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-workers" class="page">
+        <div class="text-center mb-16 reveal">
+          <h1 class="font-syne font-black text-5xl uppercase tracking-tighter">
+            Our <span class="text-orange-600">Certified</span> Professionals
+          </h1>
+          <p class="text-gray-400 mt-4 max-w-xl mx-auto">Every artisan is background-checked, trained, and rated by real
+            customers.</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex flex-wrap gap-3 mb-10" id="skill-filter">
+          <button class="zone-pill active" onclick="Workers.filter(this,'All')">All Skills</button>
+        </div>
+
+        <div id="all-workers-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     MY ORDERS / BOOKINGS PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-bookings" class="page max-w-3xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+          <h1 class="font-syne font-extrabold text-4xl uppercase">My <span class="text-orange-600">Orders</span></h1>
+          <div class="flex gap-2 flex-wrap" id="booking-filter-tabs">
+            <button onclick="Bookings.filter('all')" id="btab-all" class="zone-pill active text-xs">All</button>
+            <button onclick="Bookings.filter('pending')" id="btab-pending" class="zone-pill text-xs">Pending</button>
+            <button onclick="Bookings.filter('approved')" id="btab-approved" class="zone-pill text-xs">Awaiting
+              Approval</button>
+            <button onclick="Bookings.filter('done')" id="btab-done" class="zone-pill text-xs">Completed</button>
+          </div>
+        </div>
+        <div id="bookings-list"></div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     PROFILE PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-profile" class="page max-w-4xl mx-auto">
+        <!-- Header Card -->
+        <div class="bg-[#0d0e11] text-white p-10 rounded-3xl flex items-center gap-8 mb-8">
+          <div id="profile-initial"
+            class="w-24 h-24 bg-orange-600 rounded-full flex items-center justify-center font-syne font-black text-4xl flex-shrink-0">
+            ?</div>
+          <div>
+            <h3 id="profile-name" class="font-syne font-bold text-4xl">Guest User</h3>
+            <p id="profile-role-display" class="text-gray-400 text-lg mt-1">Member</p>
+            <p id="profile-email-display" class="text-gray-500 text-sm mt-1"></p>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-3 gap-6 mb-8">
+          <div class="stat-card">
+            <p class="text-4xl font-bold text-orange-600" id="stat-bookings">0</p>
+            <p class="uppercase text-[10px] font-bold tracking-widest text-gray-400 mt-2">Total Bookings</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-4xl font-bold text-orange-600">4.9</p>
+            <p class="uppercase text-[10px] font-bold tracking-widest text-gray-400 mt-2">Rating</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-4xl font-bold text-orange-600" id="stat-spent">৳0</p>
+            <p class="uppercase text-[10px] font-bold tracking-widest text-gray-400 mt-2">Total Spent</p>
+          </div>
+        </div>
+
+        <!-- Edit Profile -->
+        <div class="bg-white rounded-3xl border border-gray-100 p-8">
+          <h3 class="font-syne font-bold text-xl uppercase mb-6">Edit Profile</h3>
+          <form onsubmit="Profile.save(event)" class="space-y-4 max-w-md">
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Display
+                Name</label>
+              <input type="text" id="profile-edit-name" class="auth-input" placeholder="Your name">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Phone</label>
+              <input type="tel" id="profile-edit-phone" class="auth-input" placeholder="+880 1xxx xxx xxx">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Area /
+                Zone</label>
+              <select id="profile-edit-zone" class="auth-input bg-white">
+                <option>Gulshan</option>
+                <option>Banani</option>
+                <option>Dhanmondi</option>
+                <option>Bashundhara</option>
+                <option>Mirpur</option>
+                <option>Uttara</option>
+              </select>
+            </div>
+            <button type="submit"
+              class="bg-[#0d0e11] text-white py-3 px-8 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition">Save
+              Changes</button>
+          </form>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     MODERATOR DASHBOARD
+     ════════════════════════════════════════════ -->
+      <main id="page-mod" class="page">
+        <div class="flex justify-between items-center mb-10">
+          <div>
+            <h1 class="font-syne font-black text-4xl uppercase">Moderator <span class="text-orange-600">Dashboard</span>
+            </h1>
+            <p class="text-gray-400 text-sm mt-1">Manage bookings, workers, and services in real time.</p>
+          </div>
+          <div class="text-right">
+            <p id="mod-date" class="text-xs text-gray-400 uppercase tracking-widest"></p>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+          <div class="stat-card">
+            <p class="text-4xl font-bold text-orange-600" id="mod-stat-bookings">0</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Total Bookings</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-4xl font-bold" id="mod-stat-revenue">৳0</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Revenue</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-4xl font-bold" id="mod-stat-users">0</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Registered Users</p>
+          </div>
+          <div class="stat-card">
+            <p class="text-4xl font-bold" id="mod-stat-workers">0</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Active Workers</p>
+          </div>
+        </div>
+
+        <!-- Analytics Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          <div class="bg-white rounded-3xl border border-gray-100 p-6 lg:col-span-2 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-syne font-bold text-sm uppercase tracking-widest text-gray-700">Revenue Trend — Last 14 Days</h3>
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">Daily Trend</span>
+            </div>
+            <div style="height:260px; position:relative;"><canvas id="chart-revenue"></canvas></div>
+          </div>
+          <div class="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-syne font-bold text-sm uppercase tracking-widest text-gray-700">Bookings by Status</h3>
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">Distribution</span>
+            </div>
+            <div style="height:260px; position:relative;"><canvas id="chart-status"></canvas></div>
+          </div>
+          <div class="bg-white rounded-3xl border border-gray-100 p-6 lg:col-span-3 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-syne font-bold text-sm uppercase tracking-widest text-gray-700">Top 5 Booked Services</h3>
+              <span class="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full">Most Popular</span>
+            </div>
+            <div style="height:260px; position:relative;"><canvas id="chart-services"></canvas></div>
+          </div>
+        </div>
+
+        <!-- All Bookings Table -->
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden mb-10">
+          <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="font-syne font-bold text-xl uppercase">All Bookings</h3>
+            <button onclick="Mod.exportCSV()"
+              class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-orange-600 transition border-b border-gray-200 hover:border-orange-600 pb-1">Export
+              CSV ↓</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full mod-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Customer</th>
+                  <th>Services</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                  <th>Scheduled For</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="mod-bookings-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Complaints Review -->
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden mb-10">
+          <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="font-syne font-bold text-xl uppercase text-orange-600">Complaints</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full mod-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Complainant</th>
+                  <th>Against</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="mod-complaints-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Workers Management -->
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden">
+          <div class="p-6 border-b flex justify-between items-center">
+            <h3 class="font-syne font-bold text-xl uppercase">Workers</h3>
+            <button onclick="Mod.openAddWorker()"
+              class="bg-[#0d0e11] text-white px-6 py-2 rounded-full text-xs font-bold uppercase hover:bg-orange-600 transition">+
+              Add Worker</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full mod-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Skill</th>
+                  <th>Area</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="mod-workers-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     SERVICE PROVIDER DASHBOARD
+     ════════════════════════════════════════════ -->
+      <main id="page-provider" class="page max-w-5xl mx-auto">
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-10">
+          <div>
+            <h1 class="font-syne font-black text-4xl uppercase">Worker <span class="text-orange-600">Workspace</span>
+            </h1>
+            <p class="text-gray-400 text-sm mt-1">Manage your jobs, profile, and ratings.</p>
+          </div>
+          <span id="provider-status-badge" class="status-badge badge-pending">Pending Verification</span>
+        </div>
+
+        <!-- Profile Header Card -->
+        <div
+          class="bg-[#0d0e11] text-white p-8 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+          <div class="flex items-center gap-6">
+            <div id="provider-avatar"
+              class="w-20 h-20 bg-orange-600 rounded-full flex items-center justify-center font-syne font-black text-3xl flex-shrink-0">
+              W</div>
+            <div>
+              <h3 id="provider-name" class="font-syne font-bold text-3xl">Worker Name</h3>
+              <p id="provider-skill-display" class="text-orange-400 font-bold text-sm uppercase tracking-widest mt-1">
+                Skill</p>
+              <p class="text-gray-400 text-xs mt-2">📍 <span id="provider-zones-display">—</span></p>
+              <p class="text-gray-500 text-xs mt-1">📞 <span id="provider-phone-display">—</span></p>
+            </div>
+          </div>
+          <div class="flex gap-10 text-center">
+            <div>
+              <p id="provider-completed-count" class="text-4xl font-bold text-white">0</p>
+              <p class="uppercase text-[9px] font-bold tracking-widest text-gray-400 mt-1">Jobs Done</p>
+            </div>
+            <div>
+              <p id="provider-pending-count" class="text-4xl font-bold text-orange-400">0</p>
+              <p class="uppercase text-[9px] font-bold tracking-widest text-gray-400 mt-1">Active Jobs</p>
+            </div>
+            <div>
+              <p id="provider-rating-display" class="text-4xl font-bold text-yellow-400">4.5</p>
+              <p class="uppercase text-[9px] font-bold tracking-widest text-gray-400 mt-1">Avg Rating</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two-col: Edit Profile + My Reviews -->
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+
+          <!-- Edit Profile -->
+          <div class="bg-white rounded-3xl border border-gray-100 p-8">
+            <h3 class="font-syne font-bold text-xl uppercase mb-6">Edit Profile</h3>
+            <form onsubmit="Provider.save(event)" class="space-y-4">
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Display
+                  Name</label>
+                <input type="text" id="provider-edit-name" class="auth-input" placeholder="Your full name">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Phone</label>
+                <input type="tel" id="provider-edit-phone" class="auth-input" placeholder="+880 1xxx xxx xxx">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Skill / Service
+                  Category</label>
+                <select id="provider-edit-skill" class="auth-input bg-white">
+                  <option>Plumbing</option>
+                  <option>Electrical</option>
+                  <option>Cleaning</option>
+                  <option>Painting</option>
+                  <option>Carpentry</option>
+                  <option>AC Service</option>
+                  <option>Pest Control</option>
+                  <option>Gardening</option>
+                  <option>Security</option>
+                  <option>Moving Help</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Coverage
+                  Zones</label>
+                <div class="flex flex-wrap gap-2" id="provider-zone-checkboxes">
+                  <!-- Rendered by JS -->
+                </div>
+              </div>
+              <button type="submit"
+                class="w-full bg-[#0d0e11] text-white py-3 px-8 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition">Save
+                Changes</button>
+            </form>
+          </div>
+
+          <!-- My Reviews -->
+          <div class="bg-white rounded-3xl border border-gray-100 p-8">
+            <h3 class="font-syne font-bold text-xl uppercase mb-6">My Reviews</h3>
+            <div id="provider-reviews-list" class="space-y-4 max-h-96 overflow-y-auto">
+              <p class="text-gray-400 text-sm">No reviews yet.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Bookings Queue -->
+        <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden">
+          <div class="p-6 border-b">
+            <h3 class="font-syne font-bold text-xl uppercase">My Assigned Bookings</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full mod-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Customer</th>
+                  <th>Services</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                  <th>Scheduled For</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="provider-jobs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     MESSAGES PAGE
+     ════════════════════════════════════════════ -->
+      <main id="page-messages" class="page">
+        <!-- Page Header -->
+        <div class="mb-10 reveal">
+          <h1 class="font-syne font-black text-4xl uppercase">Your <span class="text-orange-600">Messages</span></h1>
+        </div>
+
+        <!-- Two-column layout: person list left, chat right -->
+        <div class="flex gap-6 h-[600px]">
+
+          <!-- LEFT: Conversation list -->
+          <div class="w-80 flex-shrink-0 bg-white rounded-3xl border border-gray-100 flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+              <p class="font-syne font-bold text-sm uppercase tracking-widest text-gray-500">Conversations</p>
+            </div>
+            <div id="msg-person-list" class="flex-1 overflow-y-auto">
+              <!-- JS renders person rows here -->
+              <p id="msg-no-chats" class="text-center text-gray-400 text-sm p-8" style="display:none;">No active chats
+                yet.<br>Chats appear after a worker accepts your booking.</p>
+            </div>
+          </div>
+
+          <!-- RIGHT: Chat pane -->
+          <div class="flex-1 bg-white rounded-3xl border border-gray-100 flex flex-col overflow-hidden">
+
+            <!-- Empty state -->
+            <div id="msg-empty-state" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+              <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                  stroke="#d1d5db" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <p class="font-syne font-bold text-gray-400">Select a conversation</p>
+              <p class="text-gray-300 text-sm mt-1">Choose a person from the left to start chatting</p>
+            </div>
+
+            <!-- Active chat view (shown when a person is selected) -->
+            <div id="msg-chat-view" class="flex-1 flex flex-col" style="display:none;">
+
+              <!-- Chat header -->
+              <div id="msg-chat-header" class="px-6 py-4 border-b border-gray-100 flex items-center gap-4">
+                <div id="msg-chat-avatar" class="w-10 h-10 rounded-full bg-[#0d0e11] text-white
+               flex items-center justify-center font-syne font-bold text-sm">?</div>
+                <div>
+                  <p id="msg-chat-name" class="font-syne font-bold text-[#0d0e11]">Name</p>
+                  <p id="msg-chat-sub" class="text-gray-400 text-xs">Service</p>
+                </div>
+              </div>
+
+              <!-- Messages area -->
+              <div id="msg-chat-messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3">
+                <!-- Bubbles rendered by JS -->
+              </div>
+
+              <!-- Input bar -->
+              <form id="msg-chat-form" onsubmit="MsgPanel.send(event)"
+                class="px-4 py-4 border-t border-gray-100 flex items-center gap-3">
+                <input id="msg-chat-input" autocomplete="off" placeholder="Type a message..." class="flex-1 border border-gray-200 rounded-full px-5 py-2.5 text-sm outline-none
+                        focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition" />
+                <button type="submit" class="bg-[#0d0e11] hover:bg-orange-600 text-white rounded-full w-10 h-10
+                         flex items-center justify-center transition flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     COMBO DEALS PAGE  (#page-combos)
+     ════════════════════════════════════════════ -->
+      <main id="page-combos" class="page max-w-5xl mx-auto">
+        <div class="mb-10 reveal">
+          <h1 class="font-syne font-black text-4xl uppercase">Combo <span class="text-orange-600">Deals</span></h1>
+          <p class="text-gray-500 mt-2 text-sm">Bundle 2 services &amp; save <span
+              class="font-bold text-orange-600">৳200</span> on every combo!</p>
+        </div>
+        <div id="combos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- JS renders combo cards here -->
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     COMPLAINTS PAGE  (#page-complaints)
+     ════════════════════════════════════════════ -->
+      <main id="page-complaints" class="page max-w-5xl mx-auto">
+
+        <!-- ── MODERATOR VIEW (hidden for customers/providers) ── -->
+        <div id="complaints-mod-view" class="hidden">
+          <div class="mb-10 reveal">
+            <h1 class="font-syne font-black text-4xl uppercase">All <span class="text-orange-600">Complaints</span></h1>
+            <p class="text-gray-500 mt-2 text-sm">Review complaints filed between customers and service providers. Take
+              action as needed.</p>
+          </div>
+
+          <!-- Stats row -->
+          <div class="grid grid-cols-3 gap-6 mb-10">
+            <div class="stat-card text-center">
+              <p class="text-3xl font-bold text-orange-600" id="cmod-stat-total">0</p>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Total Complaints</p>
+            </div>
+            <div class="stat-card text-center">
+              <p class="text-3xl font-bold text-red-500" id="cmod-stat-open">0</p>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Open</p>
+            </div>
+            <div class="stat-card text-center">
+              <p class="text-3xl font-bold text-green-600" id="cmod-stat-resolved">0</p>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-2">Resolved</p>
+            </div>
+          </div>
+
+          <!-- All complaints table -->
+          <div class="bg-white rounded-3xl border border-gray-100 overflow-hidden mb-10">
+            <div class="p-6 border-b">
+              <h3 class="font-syne font-bold text-xl uppercase">Complaint Log</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full mod-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>From</th>
+                    <th>Role</th>
+                    <th>Against</th>
+                    <th>Role</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="cmod-complaints-tbody">
+                  <tr>
+                    <td colspan="9" class="text-center text-gray-400 py-10 text-sm">Loading complaints...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── CUSTOMER / PROVIDER VIEW ── -->
+        <div id="complaints-user-view">
+          <div class="mb-10 reveal">
+            <h1 class="font-syne font-black text-4xl uppercase">Your <span class="text-orange-600">Complaints</span>
+            </h1>
+            <p class="text-gray-500 mt-2 text-sm">File a complaint about a completed service. One complaint per booking
+              allowed.</p>
+          </div>
+
+          <!-- Completed services to complain about -->
+          <div class="mb-10">
+            <h2 class="font-syne font-bold text-lg uppercase tracking-widest text-gray-700 mb-4">Completed Services</h2>
+            <div id="complaints-bookings-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- JS renders completed booking cards -->
+            </div>
+            <p id="complaints-no-done" class="text-gray-400 text-sm text-center py-8 hidden">No completed services yet.
+              Complaints can be filed after a service is marked done.</p>
+          </div>
+
+          <!-- Complaint history -->
+          <div>
+            <h2 class="font-syne font-bold text-lg uppercase tracking-widest text-gray-700 mb-4">Your Complaint History
+            </h2>
+            <div id="complaints-history-list" class="flex flex-col gap-4">
+              <!-- JS renders complaint history cards -->
+            </div>
+            <p id="complaints-no-history" class="text-gray-400 text-sm text-center py-8 hidden">No complaints filed yet.
+            </p>
+          </div>
+        </div>
+      </main>
+
+      <!-- ════════════════════════════════════════════
+     COMPLAINT MODAL
+     ════════════════════════════════════════════ -->
+      <div id="complaint-modal" class="fixed inset-0 z-50 hidden items-center justify-center"
+        style="background:rgba(0,0,0,0.55);">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md mx-4 shadow-2xl relative">
+          <button onclick="Complaints.closeModal()"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          <h2 class="font-syne font-black text-2xl mb-1">File a <span class="text-orange-600">Complaint</span></h2>
+          <p id="complaint-modal-booking-label" class="text-gray-500 text-sm mb-6"></p>
+          <div class="mb-4">
+            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Category</label>
+            <select id="complaint-category"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 transition">
+              <!-- Options injected by JS based on role -->
+            </select>
+          </div>
+          <div class="mb-6">
+            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Description</label>
+            <textarea id="complaint-description" rows="4" placeholder="Describe the issue in detail..."
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-orange-400 transition resize-none"></textarea>
+          </div>
+          <p id="complaint-modal-error" class="text-red-500 text-xs mb-3 hidden"></p>
+          <button id="complaint-submit-btn" onclick="Complaints.submit()"
+            class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition">Submit
+            Complaint</button>
+        </div>
+      </div>
+
+      <!-- ════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════ -->
+      <footer class="bg-[#0d0e11] text-white mt-24 py-20 px-6 border-t border-white/5">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-14">
+          <div class="md:col-span-2">
+            <div class="font-syne font-black text-4xl uppercase mb-6">প্রয়ো<span class="text-orange-500">জ</span>ন
+            </div>
+            <p class="text-gray-500 max-w-sm leading-relaxed text-sm">The standard for home maintenance in Dhaka for
+              over two decades. We believe in the dignity of labor and the precision of craft.</p>
+          </div>
+          <div>
+            <h4 class="font-Times New Roman text-xs font-bold uppercase tracking-[0.3em] mb-6 text-orange-500">HQ
+              Contact</h4>
+            <p class="text-sm text-gray-400">House 20, Road 15, Bashundhara R/A<br>Dhaka, 1229</p>
+            <p class="mt-4 font-Times New Roman text-2xl">+880 1533 461 586</p>
+          </div>
+          <div>
+            <h4 class="font-Times New Roman text-xs font-bold uppercase tracking-[0.3em] mb-6 text-orange-500">Support
+            </h4>
+            <ul class="text-sm text-gray-400 space-y-3">
+              <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+              <li><a href="#" class="hover:text-white transition">Worker Protection</a></li>
+              <li><a href="#" class="hover:text-white transition">Refund Policy</a></li>
+            </ul>
+          </div>
+        </div>
+      </footer>
+    </div><!-- end app-wrapper -->
+
+    <!-- ════════════════════════════════════════════
+     NOTIFICATIONS DRAWER
+     ════════════════════════════════════════════ -->
+    <div id="notif-panel" onclick="Notifications.handleOverlayClick(event)">
+      <div id="notif-drawer">
+        <!-- Header -->
+        <div class="flex justify-between items-center pb-4 border-b border-gray-100 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🔔</span>
+            <h3 class="font-syne font-bold text-2xl uppercase">Notifications</h3>
+            <span id="notif-unread-count-pill" class="text-[10px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded-full uppercase ml-1">0 New</span>
+          </div>
+          <button onclick="Notifications.toggle()" class="text-2xl text-gray-400 hover:text-black hover:rotate-90 transition-transform leading-none font-bold">&times;</button>
+        </div>
+
+        <!-- Action Bar: Filter / Mark all read -->
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex gap-1.5">
+            <button type="button" onclick="Notifications.setFilter('all')" id="notif-filter-all" class="notif-tab-btn active">All</button>
+            <button type="button" onclick="Notifications.setFilter('unread')" id="notif-filter-unread" class="notif-tab-btn">Unread</button>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" onclick="Notifications.markAllRead()" class="text-[11px] font-bold text-orange-600 hover:text-orange-700 transition">Mark all read</button>
+            <span class="text-gray-300">|</span>
+            <button type="button" onclick="Notifications.clearAll()" class="text-[11px] font-bold text-gray-400 hover:text-red-500 transition">Clear</button>
+          </div>
+        </div>
+
+        <!-- Notification List -->
+        <div id="notif-list" class="space-y-3 overflow-y-auto" style="max-height: calc(100vh - 180px);">
+          <!-- Dynamic notification cards rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+     CART DRAWER
+     ════════════════════════════════════════════ -->
+    <div id="cart-panel" onclick="Cart.handleOverlayClick(event)">
+      <div id="cart-drawer">
+        <div class="flex justify-between items-center mb-8">
+          <h3 class="font-syne font-bold text-3xl uppercase">Cart</h3>
+          <button onclick="Cart.toggle()" class="text-3xl hover:rotate-90 transition-transform leading-none">✕</button>
+        </div>
+        <div id="cart-items" class="space-y-1" style="min-height:100px;"></div>
+
+        <!-- Preferred Schedule Time -->
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <label for="cart-schedule" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 block mb-1.5">
+            📅 Preferred Date &amp; Time <span class="text-orange-600">*</span>
+          </label>
+          <input type="datetime-local" id="cart-schedule" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-xs font-medium text-gray-700 outline-none focus:border-orange-500 transition bg-gray-50 focus:bg-white" />
+        </div>
+
+        <!-- Service Location Selector & GPS Auto-Locate -->
+        <div class="border-t border-gray-100 pt-4 mt-4">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Service Delivery Location</span>
+            <span id="cart-zone-badge"
+              class="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-bold uppercase">Gulshan</span>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-2xl border border-gray-200/80 mb-3">
+            <p id="cart-address-text" class="text-xs font-medium text-gray-700 line-clamp-2">📍 Road 11, Block D,
+              Gulshan, Dhaka</p>
+            <p id="cart-coords-text" class="text-[10px] text-gray-400 mt-0.5 font-mono">GPS: 23.7925° N, 90.4078° E</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <button type="button" onclick="LiveMap.autoLocateCart()"
+              class="bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+              <span>🎯</span> Auto GPS
+            </button>
+            <button type="button" onclick="LiveMap.openPickerModal()"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1">
+              <span>🗺️</span> Pick on Map
+            </button>
+          </div>
+        </div>
+
+        <div class="border-t mt-4 pt-4 flex justify-between font-bold text-2xl">
+          <span>Total</span><span class="text-orange-600" id="cart-total">৳0</span>
+        </div>
+        <button onclick="Cart.checkout()"
+          class="w-full bg-[#0d0e11] text-white py-4 rounded-2xl mt-6 font-bold uppercase hover:bg-orange-600 transition text-sm tracking-widest">
+          Order Confirmed
+        </button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+     BOOKING CONFIRMED OVERLAY (modal, not a page)
+     ════════════════════════════════════════════ -->
+    <div id="booking-confirmed-overlay">
+      <div id="booking-confirmed-card">
+        <div class="text-7xl mb-5">✅</div>
+        <h2 class="font-syne font-black text-4xl uppercase mb-3">
+          Booking <span class="text-orange-600">Confirmed!</span>
+        </h2>
+        <p class="text-gray-500 text-sm mb-2" id="confirm-booking-id"></p>
+        <p class="text-gray-400 text-sm mb-8">
+          Our team will contact you within 30 minutes to confirm your appointment time.
+        </p>
+        <div class="flex gap-4 justify-center flex-wrap">
+          <button onclick="BookingConfirmed.viewInvoice()"
+            class="bg-orange-600 text-white px-8 py-3 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-orange-700 transition flex items-center gap-2 shadow-lg">
+            <span>🧾</span> View Invoice
+          </button>
+          <button onclick="BookingConfirmed.viewOrders()"
+            class="bg-[#0d0e11] text-white px-8 py-3 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-gray-900 transition">
+            View Orders
+          </button>
+          <button onclick="BookingConfirmed.bookMore()"
+            class="border-2 border-[#0d0e11] px-8 py-3 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-[#0d0e11] hover:text-white transition">
+            Book More
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+     ADD WORKER MODAL
+     ════════════════════════════════════════════ -->
+    <div id="worker-modal"
+      class="hidden fixed inset-0 z-[600] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+      <div class="bg-white rounded-3xl p-10 w-full max-w-md shadow-2xl">
+        <h3 class="font-syne font-bold text-2xl uppercase mb-6">Add New Worker</h3>
+        <form onsubmit="Mod.submitWorker(event)" class="space-y-4">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Full Name</label>
+            <input type="text" id="wm-name" required class="auth-input" placeholder="Worker name">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Skill</label>
+            <input type="text" id="wm-skill" required class="auth-input" placeholder="e.g. Plumber">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Area</label>
+            <select id="wm-area" class="auth-input bg-white">
+              <option>Gulshan</option>
+              <option>Banani</option>
+              <option>Dhanmondi</option>
+              <option>Bashundhara</option>
+              <option>Mirpur</option>
+              <option>Uttara</option>
+            </select>
+          </div>
+          <div class="flex gap-4 pt-2">
+            <button type="submit"
+              class="flex-1 bg-[#0d0e11] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition">Add
+              Worker</button>
+            <button type="button" onclick="Mod.closeWorkerModal()"
+              class="flex-1 border border-gray-200 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════════
+     REVIEW MODAL
+     ════════════════════════════════════════════ -->
+    <div id="review-modal"
+      class="hidden fixed inset-0 z-[700] bg-black/60 backdrop-blur-sm items-center justify-center p-6">
+      <div class="review-modal-card">
+        <!-- Header -->
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h3 class="font-syne font-black text-2xl uppercase">Rate Your <span
+                class="text-orange-600">Experience</span></h3>
+            <p id="review-booking-id" class="text-gray-400 text-xs mt-1 tracking-widest"></p>
+          </div>
+          <button onclick="Reviews.closeModal()"
+            class="text-2xl text-gray-400 hover:text-gray-800 transition leading-none font-bold">&times;</button>
+        </div>
+
+        <!-- Worker & Service Info -->
+        <div class="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-2xl">
+          <div
+            class="w-12 h-12 rounded-full bg-[#0d0e11] text-white flex items-center justify-center font-syne font-bold text-lg"
+            id="review-worker-initial">W</div>
+          <div>
+            <p class="font-syne font-bold text-sm" id="review-worker-name">Worker Name</p>
+            <p class="text-xs text-gray-400 mt-0.5" id="review-service-name">Service</p>
+          </div>
+        </div>
+
+        <!-- Star Picker -->
+        <form onsubmit="Reviews.submit(event)">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Your Rating</p>
+          <div class="star-picker mb-6">
+            <button type="button" class="star-btn" onclick="Reviews.setRating(1)" onmouseover="Reviews._hoverStar(1)"
+              onmouseout="Reviews._resetHover()">★</button>
+            <button type="button" class="star-btn" onclick="Reviews.setRating(2)" onmouseover="Reviews._hoverStar(2)"
+              onmouseout="Reviews._resetHover()">★</button>
+            <button type="button" class="star-btn" onclick="Reviews.setRating(3)" onmouseover="Reviews._hoverStar(3)"
+              onmouseout="Reviews._resetHover()">★</button>
+            <button type="button" class="star-btn" onclick="Reviews.setRating(4)" onmouseover="Reviews._hoverStar(4)"
+              onmouseout="Reviews._resetHover()">★</button>
+            <button type="button" class="star-btn" onclick="Reviews.setRating(5)" onmouseover="Reviews._hoverStar(5)"
+              onmouseout="Reviews._resetHover()">★</button>
+          </div>
+          <p id="review-star-label" class="text-center text-sm text-gray-400 -mt-4 mb-6">Click to rate</p>
+
+          <!-- Comment -->
+          <div class="mb-5">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Your Review</label>
+            <textarea id="review-comment" rows="4" maxlength="500"
+              class="w-full border-2 border-gray-100 rounded-2xl px-4 py-3 text-sm outline-none resize-none focus:border-orange-400 transition"
+              placeholder="Tell us about your experience…"></textarea>
+          </div>
+
+          <p id="review-error" class="hidden text-red-500 text-xs font-bold mb-3"></p>
+
+          <div class="flex gap-3">
+            <button type="submit" id="review-submit-btn"
+              class="flex-1 bg-[#0d0e11] text-white py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-orange-600 transition">
+              Submit Review
+            </button>
+            <button type="button" onclick="Reviews.closeModal()"
+              class="border-2 border-gray-200 px-6 py-3.5 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-gray-50 transition">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+     LOCATION PICKER MODAL (Doorstep Pinpoint Map)
+     ════════════════════════════════════════════ -->
+    <div id="location-picker-modal"
+      class="fixed inset-0 z-[800] bg-black/60 backdrop-blur-sm items-center justify-center p-4 md:p-6 hidden">
+      <div
+        class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-popIn">
+        <!-- Header -->
+        <div class="px-6 py-4 bg-[#0d0e11] text-white flex justify-between items-center">
+          <div>
+            <h3 class="font-syne font-black text-lg uppercase flex items-center gap-2">
+              <span>📍</span> Set Your <span class="text-orange-500">Service Location</span>
+            </h3>
+            <p class="text-[11px] text-gray-400">Drag the pin or click on the map to pinpoint your exact home/office
+              doorstep</p>
+          </div>
+          <button onclick="LiveMap.closePickerModal()"
+            class="text-2xl text-gray-400 hover:text-white transition leading-none font-bold">&times;</button>
+        </div>
+
+        <!-- Search & Auto-locate action bar -->
+        <div class="p-4 bg-gray-50 border-b border-gray-200 flex gap-2">
+          <div class="relative flex-1">
+            <input type="text" id="map-search-input"
+              placeholder="Search address or area in Dhaka (e.g. Gulshan-2, Banani Road 11)..."
+              class="w-full px-4 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-orange-500 pr-16 bg-white"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();LiveMap.searchAddress();}">
+            <button type="button" onclick="LiveMap.searchAddress()"
+              class="absolute right-1.5 top-1.5 bg-gray-900 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-lg hover:bg-orange-600 transition">Find</button>
+          </div>
+          <button type="button" onclick="LiveMap.locateMeInModal()"
+            class="bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 transition shadow-sm shrink-0">
+            <span class="live-dot-pulse bg-white"></span> 🎯 Auto-Locate
+          </button>
+        </div>
+
+        <!-- Interactive Leaflet Map Container -->
+        <div class="relative flex-1 min-h-[360px] h-[360px] w-full bg-gray-100">
+          <div id="picker-map" class="h-full w-full" style="min-height:360px;"></div>
+          <!-- Floating helper badge -->
+          <div
+            class="absolute bottom-3 left-3 z-[400] bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-gray-200 text-[11px] text-gray-700 shadow-md font-medium pointer-events-none">
+            📍 Drag the pin or click anywhere on the map
+          </div>
+          <!-- Floating Google Maps Center On My Location Button -->
+          <button type="button" class="gmaps-fab-btn" title="Re-center on My Exact GPS Location" onclick="LiveMap.locateMeInModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Address Details & Confirm Footer -->
+        <div class="p-5 bg-white border-t border-gray-200 space-y-3">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Detected Zone</span>
+                <span id="modal-zone-badge"
+                  class="bg-orange-100 text-orange-700 text-xs font-bold px-2.5 py-0.5 rounded-full uppercase">Gulshan</span>
+              </div>
+              <p id="modal-address-preview" class="text-xs font-semibold text-gray-800 mt-1 leading-snug">Locating
+                address...</p>
+              <p id="modal-coords-preview" class="text-[10px] text-gray-400 font-mono mt-0.5">23.7925° N, 90.4078° E</p>
+            </div>
+          </div>
+          <div>
+            <input type="text" id="modal-apt-input"
+              placeholder="Apartment / House / Floor No. / Landmark (Optional note)"
+              class="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-orange-500 bg-gray-50">
+          </div>
+          <div class="flex gap-3 pt-1">
+            <button type="button" onclick="LiveMap.confirmLocation()"
+              class="flex-1 bg-[#0d0e11] hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition shadow-lg">
+              ✓ Confirm Service Location
+            </button>
+            <button type="button" onclick="LiveMap.closePickerModal()"
+              class="border border-gray-300 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-gray-100 transition">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+     LIVE ORDER TRACKING MODAL (Live Route & ETA)
+     ════════════════════════════════════════════ -->
+    <div id="live-tracking-modal"
+      class="fixed inset-0 z-[800] bg-black/60 backdrop-blur-sm items-center justify-center p-4 md:p-6 hidden">
+      <div
+        class="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-popIn">
+        <!-- Header -->
+        <div class="px-6 py-4 bg-[#0d0e11] text-white flex justify-between items-center">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="live-dot-pulse"></span>
+              <h3 class="font-syne font-black text-lg uppercase">Live Service <span
+                  class="text-orange-500">Tracker</span></h3>
+            </div>
+            <p id="track-modal-booking-id" class="text-[11px] text-gray-400 font-mono">BK-000000</p>
+          </div>
+          <button onclick="LiveMap.closeOrderTracker()"
+            class="text-2xl text-gray-400 hover:text-white transition leading-none font-bold">&times;</button>
+        </div>
+
+        <!-- Status & ETA Banner -->
+        <div class="p-4 bg-orange-50 border-b border-orange-100 flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-orange-600 text-white flex items-center justify-center text-lg font-bold">
+              👷
+            </div>
+            <div>
+              <p class="font-syne font-bold text-xs text-gray-900" id="track-worker-name">Karim Hossain (AC Technician)
+              </p>
+              <p class="text-[11px] text-orange-700 font-medium" id="track-status-text">Assigned artisan is en-route</p>
+            </div>
+          </div>
+          <div class="bg-white px-3 py-1.5 rounded-xl border border-orange-200 shadow-sm text-right">
+            <p class="text-[10px] uppercase font-bold text-gray-400">Est. Distance & Time</p>
+            <p class="text-xs font-black text-orange-600" id="track-eta-text">1.8 km • ~15 mins</p>
+          </div>
+        </div>
+
+        <!-- Live Route Map Container -->
+        <div class="relative flex-1 min-h-[350px] h-[350px] w-full bg-gray-100">
+          <div id="tracking-map" class="h-full w-full" style="min-height:350px;"></div>
+        </div>
+
+        <!-- Footer info -->
+        <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs">
+          <div class="text-gray-600 truncate mr-2">
+            <span>🏠 <strong>Destination:</strong> </span>
+            <span id="track-destination-address">Gulshan, Dhaka</span>
+          </div>
+          <button onclick="LiveMap.closeOrderTracker()"
+            class="bg-[#0d0e11] hover:bg-orange-600 text-white px-5 py-2 rounded-xl font-bold uppercase tracking-widest text-xs transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+     INVOICE / RECEIPT MODAL
+     ════════════════════════════════════════════ -->
+    <div id="invoice-modal"
+      class="fixed inset-0 z-[900] bg-black/60 backdrop-blur-sm items-center justify-center p-4 md:p-6 hidden overflow-y-auto">
+      <div id="invoice-modal-card"
+        class="invoice-sheet w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col my-auto animate-popIn border border-gray-100">
+        
+        <!-- Watermark -->
+        <div class="invoice-watermark">PROYOJON</div>
+
+        <!-- Top Action Bar (No print) -->
+        <div class="px-6 py-4 bg-[#0d0e11] text-white flex justify-between items-center no-print">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🧾</span>
+            <span class="font-syne font-black text-sm uppercase tracking-widest">Official Service Invoice</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="Invoice.print()"
+              class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow-md">
+              <span>🖨️</span> Print / Save PDF
+            </button>
+            <button type="button" onclick="Invoice.close()"
+              class="text-gray-400 hover:text-white text-2xl leading-none font-bold ml-2 transition">&times;</button>
+          </div>
+        </div>
+
+        <!-- Printable Invoice Sheet Content -->
+        <div class="p-8 md:p-10 space-y-8">
+          
+          <!-- Invoice Header -->
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 border-b border-gray-200 gap-6">
+            <div>
+              <div class="font-syne font-black text-3xl uppercase tracking-tight text-gray-900">
+                প্রয়ো<span class="text-orange-600">জ</span>ন
+              </div>
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-0.5">Dhaka Home Services Platform</p>
+              <p class="text-xs text-gray-400 mt-1">Road 11, Block D, Gulshan-2, Dhaka 1212</p>
+              <p class="text-xs text-gray-400">Support: support@proyojon.com | +880 1700 000 000</p>
+            </div>
+            <div class="text-left md:text-right">
+              <span id="invoice-status-badge" class="status-badge badge-active text-xs px-3 py-1 uppercase font-bold tracking-widest inline-block mb-2">Pending</span>
+              <p class="text-xs text-gray-400 uppercase tracking-widest">Invoice Number</p>
+              <p id="invoice-num" class="font-mono font-bold text-lg text-gray-900">INV-BK-000000</p>
+              <p class="text-xs text-gray-400 mt-1">Booked Date: <span id="invoice-date" class="font-medium text-gray-700">—</span></p>
+              <p class="text-xs text-orange-600 font-bold mt-0.5" id="invoice-schedule-row">📅 Service Time: <span id="invoice-schedule-time">—</span></p>
+            </div>
+          </div>
+
+          <!-- Billing & Provider Two Column Info -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-2">
+            <!-- Billed To -->
+            <div class="bg-gray-50/80 p-5 rounded-2xl border border-gray-100">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-orange-600 mb-2">Billed To (Customer)</p>
+              <h4 id="invoice-cust-name" class="font-syne font-bold text-base text-gray-900">Customer Name</h4>
+              <p id="invoice-cust-contact" class="text-xs text-gray-500 mt-1">Member Account</p>
+              <div class="mt-3 pt-3 border-t border-gray-200/60">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Service Destination</p>
+                <p id="invoice-delivery-address" class="text-xs font-medium text-gray-700 mt-0.5">Road 11, Gulshan, Dhaka</p>
+                <p id="invoice-delivery-zone" class="text-[11px] text-gray-400 mt-0.5">Zone: Gulshan</p>
+              </div>
+            </div>
+
+            <!-- Service Specialist -->
+            <div class="bg-gray-50/80 p-5 rounded-2xl border border-gray-100">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-orange-600 mb-2">Service Specialist / Artisan</p>
+              <div id="invoice-provider-details">
+                <h4 id="invoice-worker-name" class="font-syne font-bold text-base text-gray-900">Assigned Worker</h4>
+                <p id="invoice-worker-skill" class="text-xs text-gray-500 mt-1">Verified Proyojon Professional</p>
+                <p class="text-xs text-green-700 font-bold mt-2 flex items-center gap-1">
+                  <span>✓</span> Background &amp; NID Verified by Proyojon
+                </p>
+              </div>
+              <div id="invoice-combo-details" class="hidden space-y-2">
+                <!-- Injected if combo deal -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Line Items Table -->
+          <div class="overflow-x-auto rounded-2xl border border-gray-200">
+            <table class="w-full invoice-table">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="w-12 text-center">#</th>
+                  <th>Service Description</th>
+                  <th>Category</th>
+                  <th class="text-right">Unit Price</th>
+                  <th class="text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-items-tbody">
+                <!-- Injected by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Total Calculation Summary -->
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pt-2">
+            <div class="text-xs text-gray-500 max-w-sm">
+              <p class="font-bold text-gray-700 mb-1">🛡️ Proyojon Service Guarantee</p>
+              <p class="text-gray-400 leading-relaxed">
+                Includes 7-day post-service warranty and satisfaction guarantee. For any issues or disputes, please file a complaint via the portal.
+              </p>
+            </div>
+
+            <div class="w-full md:w-72 space-y-2 text-sm bg-gray-50 p-5 rounded-2xl border border-gray-100">
+              <div class="flex justify-between text-gray-500 text-xs">
+                <span>Subtotal</span>
+                <span id="invoice-subtotal" class="font-medium text-gray-800">৳0</span>
+              </div>
+              <div id="invoice-discount-row" class="flex justify-between text-green-600 text-xs hidden">
+                <span>Combo Discount</span>
+                <span id="invoice-discount">-৳0</span>
+              </div>
+              <div class="flex justify-between text-gray-500 text-xs">
+                <span>Platform Service Fee</span>
+                <span class="text-green-600 font-bold uppercase text-[10px]">Free</span>
+              </div>
+              <div class="border-t border-gray-200 pt-3 flex justify-between items-baseline font-syne">
+                <span class="font-bold text-gray-900 text-base">Grand Total</span>
+                <span id="invoice-grand-total" class="font-black text-2xl text-orange-600">৳0</span>
+              </div>
+              <div class="text-right text-[10px] text-gray-400 uppercase tracking-widest mt-1">
+                Payment Method: <strong class="text-gray-700">Cash on Service / COD</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice Footer -->
+          <div class="pt-6 border-t border-gray-100 text-center text-xs text-gray-400">
+            <p>Thank you for choosing <strong>Proyojon</strong> — empowering skilled artisans across Dhaka city.</p>
+            <p class="text-[10px] text-gray-400 mt-1">Computer generated invoice. No physical signature required.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- ════════════════════════════════════════════
+     AI ASSISTANT CHATBOX
+     ════════════════════════════════════════════ -->
+    <button id="ai-chat-btn" onclick="AIChat.toggle()" title="AI Assistant">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+    </button>
+
+    <div id="ai-chat-box">
+      <!-- Chat Header -->
+      <div class="ai-header">
+        <div class="ai-header-info">
+          <div class="ai-status-dot"></div>
+          <div>
+            <h4 class="font-syne font-bold text-sm tracking-tight">Proyojon AI</h4>
+            <p class="text-[10px] text-gray-400">Online assistant</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="AIChat.toggle()"
+            class="text-gray-400 hover:text-white transition leading-none font-bold text-sm" title="Minimize">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings removed — Groq AI is configured server-side via .env -->
+
+      <!-- Chat Messages list -->
+      <div id="ai-messages" class="ai-messages">
+        <!-- Initial Greetings will go here -->
+      </div>
+
+      <!-- Chat Input -->
+      <form onsubmit="AIChat.submitMessage(event)" class="ai-input-area">
+        <input type="text" id="ai-input" required class="ai-input-field" placeholder="Ask about services, booking..."
+          autocomplete="off">
+        <button type="submit" class="ai-send-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transform rotate-90" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+
+</html>
